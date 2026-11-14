@@ -1,22 +1,22 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { FallbackModule } from './modules/fallback/fallback.module';
 import { HealthController } from './modules/health/health/health.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { RequestedService, RequestedServiceSchema } from './modules/requestedServiceUpdate/schemas/requestedService.schema';
-import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
-import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
-import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
-import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
-import { HttpModule } from '@nestjs/axios';
-import configuration from './config/configuration';
 import { ServiceOrderClient } from './modules/httpClient/serviceOrder.client';
+import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
+import { RequestedService, RequestedServiceSchema } from './modules/requestedServiceUpdate/schemas/requestedService.schema';
+import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
+import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
+import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
 
 @Module({
   controllers: [HealthController, RequestedServiceController],
   imports: [
-    ConfigModule.forRoot({ load: [configuration], isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

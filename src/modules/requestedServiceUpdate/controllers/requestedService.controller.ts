@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import { RequestedServiceService } from '../services/requestedServiceUpdate.service';
 import { RequestedServiceDTO } from '../models/requestedService.model';
+import { RequestedServiceService } from '../services/requestedServiceUpdate.service';
 
 @Controller()
 export class RequestedServiceController {

@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { RequestedServiceDTO } from '../models/requestedService.model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { RequestedService, RequestedServiceDocument } from '../schemas/requestedService.schema';
-import { RequestedServicesStatus } from '../enums/status.enum';
-import { ServiceOrderUpdateService } from '../../serviceOrderUpdate/services/serviceOrderUpdate.service';
-import { ServiceOrderStatus } from '../../serviceOrderUpdate/enums/status.enum';
 import { ServiceOrderClient } from '../../httpClient/serviceOrder.client';
+import { ServiceOrderStatus } from '../../serviceOrderUpdate/enums/status.enum';
+import { ServiceOrderUpdateService } from '../../serviceOrderUpdate/services/serviceOrderUpdate.service';
+import { RequestedServicesStatus } from '../enums/status.enum';
+import { RequestedServiceDTO } from '../models/requestedService.model';
+import { RequestedService, RequestedServiceDocument } from '../schemas/requestedService.schema';
 
 @Injectable()
 export class RequestedServiceService {
@@ -16,7 +16,7 @@ export class RequestedServiceService {
     private readonly orderServiceClient: ServiceOrderClient,
   ) { }
 
-  private async getRequestedServiceStatus(requestedServiceNumber: number): Promise<RequestedServicesStatus | null> {
+  private async getRequestedServiceStatus(requestedServiceNumber: number): Promise<null | RequestedServicesStatus> {
     const requestedService = await this.requestedServiceModel.findOne({ requested_service_number: requestedServiceNumber }).exec();
     return requestedService ? requestedService.status[requestedService.status.length - 1].name as RequestedServicesStatus : null;
   }
@@ -34,7 +34,7 @@ export class RequestedServiceService {
     return this.requestedServiceModel
       .updateOne(
         { requested_service_number: requestedServiceNumber },
-        { $push: { status: { name: newStatus, created_at: new Date() } } },
+        { $push: { status: { created_at: new Date(), name: newStatus } } },
       )
       .exec();
   }
@@ -43,7 +43,7 @@ export class RequestedServiceService {
     const newRequestedService = new this.requestedServiceModel({
       requested_service_number: requestedService.requested_service_number,
       service_order_number: requestedService.service_order_number,
-      status: [{ name: requestedService.status.name, created_at: new Date() }],
+      status: [{ created_at: new Date(), name: requestedService.status.name }],
     });
 
     if (RequestedServicesStatus.RECEBIDA === requestedService.status.name) {
@@ -80,9 +80,9 @@ export class RequestedServiceService {
 
     return RequestedServicesStatus.AGUARDANDO_APROVACAO === requestedService.status.name
       ? await this.updateStatus(
-        requestedService.requested_service_number,
-        RequestedServicesStatus.AGUARDANDO_APROVACAO,
-      )
+          requestedService.requested_service_number,
+          RequestedServicesStatus.AGUARDANDO_APROVACAO,
+        )
       : null;
   }
 
@@ -95,12 +95,12 @@ export class RequestedServiceService {
     const newStatus = requestedService.status.name;
 
     if (
-      newStatus === RequestedServicesStatus.APROVADO ||
-      newStatus === RequestedServicesStatus.CANCELADO
+      newStatus === RequestedServicesStatus.APROVADO
+      || newStatus === RequestedServicesStatus.CANCELADO
     ) {
       await this.serviceOrderUpdateService.orderResponseUpdate(
         requestedService.service_order_number,
-        newStatus === RequestedServicesStatus.APROVADO ? ServiceOrderStatus.APROVADO : ServiceOrderStatus.CANCELADO
+        newStatus === RequestedServicesStatus.APROVADO ? ServiceOrderStatus.APROVADO : ServiceOrderStatus.CANCELADO,
       );
       return await this.updateStatus(requestedService.requested_service_number, newStatus);
     }
@@ -114,9 +114,9 @@ export class RequestedServiceService {
 
     return RequestedServicesStatus.EM_EXECUCAO === requestedService.status.name
       ? await this.updateStatus(
-        requestedService.requested_service_number,
-        RequestedServicesStatus.EM_EXECUCAO,
-      )
+          requestedService.requested_service_number,
+          RequestedServicesStatus.EM_EXECUCAO,
+        )
       : null;
   }
 
@@ -125,10 +125,12 @@ export class RequestedServiceService {
       requestedService.requested_service_number,
       RequestedServicesStatus.EM_EXECUCAO,
     );
-      return RequestedServicesStatus.FINALIZADA === requestedService.status.name ? await this.updateStatus(
-        requestedService.requested_service_number,
-        RequestedServicesStatus.FINALIZADA,
-      ) : null;
+    return RequestedServicesStatus.FINALIZADA === requestedService.status.name
+      ? await this.updateStatus(
+          requestedService.requested_service_number,
+          RequestedServicesStatus.FINALIZADA,
+        )
+      : null;
   }
 
   async deliver(requestedService: RequestedServiceDTO) {
@@ -142,5 +144,4 @@ export class RequestedServiceService {
       return await this.updateStatus(requestedService.requested_service_number, RequestedServicesStatus.ENTREGUE);
     }
   }
-
 }

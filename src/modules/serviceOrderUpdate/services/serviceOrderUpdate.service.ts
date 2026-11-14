@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { OrderService, OrderServiceDocument } from '../schemas/serviceOrder.schema';
-import { ServiceOrderStatus } from '../enums/status.enum';
 import { ServiceOrderClient } from '../../httpClient/serviceOrder.client';
+import { ServiceOrderStatus } from '../enums/status.enum';
+import { OrderService, OrderServiceDocument } from '../schemas/serviceOrder.schema';
+
 @Injectable()
 export class ServiceOrderUpdateService {
   constructor(
@@ -15,16 +16,16 @@ export class ServiceOrderUpdateService {
     return this.orderServiceModel
       .updateOne(
         { service_order_number: orderServiceNumber },
-        { $push: { status: { name: newStatus, created_at: new Date() } } },
+        { $push: { status: { created_at: new Date(), name: newStatus } } },
       )
       .exec();
   }
 
   private async createOrderService(orderServiceNumber: number, newStatus: ServiceOrderStatus, requestedServices: number[]) {
     const newOrderService = new this.orderServiceModel({
-      service_order_number: orderServiceNumber,
       requested_services: requestedServices,
-      status: [{ name: newStatus, created_at: new Date() }],
+      service_order_number: orderServiceNumber,
+      status: [{ created_at: new Date(), name: newStatus }],
     });
     return await newOrderService.save();
   }
@@ -33,12 +34,13 @@ export class ServiceOrderUpdateService {
     if (newStatus === ServiceOrderStatus.ENTREGUE && serviceOrderId) {
       const serviceOrder = await this.serviceOrderClient.getServiceOrder(serviceOrderId);
       if (serviceOrder && serviceOrder.requestedServices && serviceOrder.requestedServices.length > 0 && serviceOrder.requestedServices.every(
-        (service: any) => service.status === 'ENTREGUE')) {
+        (service: any) => service.status === 'ENTREGUE',
+      )) {
         await this.updateStatus(orderServiceNumber, newStatus);
       }
-    } else {
+    }
+    else {
       return newStatus === ServiceOrderStatus.PENDENTE ? await this.createOrderService(orderServiceNumber, newStatus, requestedServices || []) : await this.updateStatus(orderServiceNumber, newStatus);
     }
   }
-
 }
