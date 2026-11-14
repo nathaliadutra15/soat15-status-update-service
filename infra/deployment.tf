@@ -54,8 +54,8 @@ resource "kubernetes_deployment" "status-app" {
           }
 
           env {
-            name = "DB_NAME"
-            value = var.postgres_db
+            name = "MONGO_URI"
+            value = var.mongo_uri
           }
           
           env {
