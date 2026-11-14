@@ -54,28 +54,8 @@ resource "kubernetes_deployment" "status-app" {
           }
 
           env {
-            name = "DB_NAME"
-            value = var.postgres_db
-          }
-
-          env {
-            name = "DB_USER"
-            value = var.postgres_user
-          }
-
-          env {
-            name = "DB_PASSWORD"
-            value = var.postgres_password
-          }
-
-          env {
-            name = "DB_HOST"
-            value = var.db_host
-          }
-
-          env {
-            name = "DB_PORT"
-            value = var.db_port
+            name = "MONGO_URI"
+            value = var.mongo_uri
           }
           
           env {
