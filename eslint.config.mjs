@@ -13,4 +13,10 @@ export default [
       'ts/consistent-type-imports': 'off',
     },
   },
+    {
+        files: ['**/layout.tsx', '**/page.tsx', '**/not-found.ts', '**.config.**', '**/reportWebVitals.ts', 'tailwind.config**', 'next.config**', '**/config/**'],
+        rules: {
+            'import/no-default-export': 'off',
+        },
+    },
 ];

@@ -8,7 +8,7 @@ export default () => ({
     mongoUri: process.env.MONGO_URI,
   },
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'sssss',
+    secret: process.env.JWT_SECRET ?? 'secret',
   },
   requestedService: {
     url: process.env.REQUESTED_SERVICE_URL,

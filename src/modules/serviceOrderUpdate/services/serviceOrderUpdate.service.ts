@@ -8,12 +8,12 @@ import { OrderService, OrderServiceDocument } from '../schemas/serviceOrder.sche
 @Injectable()
 export class ServiceOrderUpdateService {
   constructor(
-    @InjectModel(OrderService.name) private readonly orderServiceModel: Model<OrderServiceDocument>,
+    @InjectModel(OrderService.name) private readonly OrderServiceModel: Model<OrderServiceDocument>,
     private readonly serviceOrderClient: ServiceOrderClient,
   ) { }
 
   private async updateStatus(orderServiceNumber: number, newStatus: ServiceOrderStatus) {
-    return this.orderServiceModel
+    return this.OrderServiceModel
       .updateOne(
         { service_order_number: orderServiceNumber },
         { $push: { status: { created_at: new Date(), name: newStatus } } },
@@ -22,7 +22,7 @@ export class ServiceOrderUpdateService {
   }
 
   private async createOrderService(orderServiceNumber: number, newStatus: ServiceOrderStatus, requestedServices: number[]) {
-    const newOrderService = new this.orderServiceModel({
+    const newOrderService = new this.OrderServiceModel({
       requested_services: requestedServices,
       service_order_number: orderServiceNumber,
       status: [{ created_at: new Date(), name: newStatus }],

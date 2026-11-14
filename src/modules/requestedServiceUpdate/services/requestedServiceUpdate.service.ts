@@ -11,13 +11,13 @@ import { RequestedService, RequestedServiceDocument } from '../schemas/requested
 @Injectable()
 export class RequestedServiceService {
   constructor(
-    @InjectModel(RequestedService.name) private readonly requestedServiceModel: Model<RequestedServiceDocument>,
+    @InjectModel(RequestedService.name) private readonly RequestedServiceModel: Model<RequestedServiceDocument>,
     private readonly serviceOrderUpdateService: ServiceOrderUpdateService,
     private readonly orderServiceClient: ServiceOrderClient,
   ) { }
 
   private async getRequestedServiceStatus(requestedServiceNumber: number): Promise<null | RequestedServicesStatus> {
-    const requestedService = await this.requestedServiceModel.findOne({ requested_service_number: requestedServiceNumber }).exec();
+    const requestedService = await this.RequestedServiceModel.findOne({ requested_service_number: requestedServiceNumber }).exec();
     return requestedService ? requestedService.status[requestedService.status.length - 1].name as RequestedServicesStatus : null;
   }
 
@@ -31,7 +31,7 @@ export class RequestedServiceService {
   }
 
   private async updateStatus(requestedServiceNumber: number, newStatus: RequestedServicesStatus) {
-    return this.requestedServiceModel
+    return this.RequestedServiceModel
       .updateOne(
         { requested_service_number: requestedServiceNumber },
         { $push: { status: { created_at: new Date(), name: newStatus } } },
@@ -40,7 +40,7 @@ export class RequestedServiceService {
   }
 
   async create(requestedService: RequestedServiceDTO) {
-    const newRequestedService = new this.requestedServiceModel({
+    const newRequestedService = new this.RequestedServiceModel({
       requested_service_number: requestedService.requested_service_number,
       service_order_number: requestedService.service_order_number,
       status: [{ created_at: new Date(), name: requestedService.status.name }],
