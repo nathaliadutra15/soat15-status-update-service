@@ -1,23 +1,36 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSourceConfigs } from './configs/dataSourceConfigs';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { FallbackModule } from './modules/fallback/fallback.module';
 import { HealthController } from './modules/health/health/health.controller';
+import { ServiceOrderClient } from './modules/httpClient/serviceOrder.client';
+import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
+import { RequestedService, RequestedServiceSchema } from './modules/requestedServiceUpdate/schemas/requestedService.schema';
+import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
+import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
+import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
 
 @Module({
-  controllers: [HealthController],
+  controllers: [HealthController, RequestedServiceController],
   imports: [
-    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
-    TypeOrmModule.forRoot({
-      ...dataSourceConfigs,
-      entities: ['dist/**/*.entity{.ts,.js}'],
-      migrations: ['dist/**/migrations/*{.ts,.js}'],
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: config.getOrThrow<string>('MONGO_URI'),
+      }),
     }),
+    MongooseModule.forFeature([
+      { name: RequestedService.name, schema: RequestedServiceSchema },
+      { name: OrderService.name, schema: OrderServiceSchema },
+    ]),
     AuthModule,
     FallbackModule,
+    HttpModule,
   ],
-  providers: [],
+  providers: [RequestedServiceService, ServiceOrderUpdateService, ServiceOrderClient],
 })
-export class AppModule {}
+export class AppModule { }
