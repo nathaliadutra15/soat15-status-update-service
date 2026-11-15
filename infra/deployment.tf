@@ -87,6 +87,46 @@ resource "kubernetes_deployment" "status-app" {
               }
             }
           }
+          
+          env {
+            name  = "AUTHORIZATION_SERVER_URL"
+            value_from {
+              secret_key_ref {
+                name = "secrets-15soat"
+                key  = "AUTHORIZATION_SERVER_URL"
+              }
+            }
+          }
+          
+          env {
+            name  = "SERVICE_ORDER_URL"
+            value_from {
+              secret_key_ref {
+                name = "secrets-15soat"
+                key  = "SERVICE_ORDER_URL"
+              }
+            }
+          }
+          
+          env {
+            name  = "PAYMENT_SERVICE_URL"
+            value_from {
+              secret_key_ref {
+                name = "secrets-15soat"
+                key  = "PAYMENT_SERVICE_URL"
+              }
+            }
+          }
+          
+          env {
+            name  = "STOCK_SERVICE_URL"
+            value_from {
+              secret_key_ref {
+                name = "secrets-15soat"
+                key  = "STOCK_SERVICE_URL"
+              }
+            }
+          }
         }
       }
     }
