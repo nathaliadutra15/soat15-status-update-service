@@ -1,14 +1,14 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
 import { RequestedServiceDTO } from '../models/requestedService.model';
 import { RequestedServiceService } from '../services/requestedServiceUpdate.service';
 
-@Controller()
+@Controller('status')
 export class RequestedServiceController {
   constructor(private readonly requestedServiceUpdate: RequestedServiceService) { }
 
   @Post()
   async requestedServiceCreated(@Body() requestedService: RequestedServiceDTO) {
-    switch (requestedService.status.name) {
+    switch (requestedService.status) {
       case 'RECEBIDA':
         return await this.requestedServiceUpdate.create(requestedService);
       case 'EM DIAGNÓSTICO':
@@ -26,8 +26,13 @@ export class RequestedServiceController {
         return await this.requestedServiceUpdate.orderResponse(requestedService);
       default:
         throw new BadRequestException(
-          `Status ${requestedService.status.name} is not valid for requested service update.`,
+          `Status ${requestedService.status} is not valid for requested service update.`,
         );
     }
+  }
+
+  @Get('/:id')
+  async getRequestedServiceStatusHistory(@Param('id', ParseIntPipe) requestedServiceNumber: number, @Res() res: Response ) {
+    return this.requestedServiceUpdate.getRequestedServiceStatusHistory(requestedServiceNumber);
   }
 }

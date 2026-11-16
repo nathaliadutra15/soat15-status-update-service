@@ -1,23 +1,11 @@
-import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-
-export class StatusDTO {
-  @IsString()
-  name: string;
-
-  @IsDateString()
-  created_at: Date;
-}
+import { IsInt, IsString } from 'class-validator';
 
 export class RequestedServiceDTO {
-  @IsInt()
-  requested_service_number: number;
+  requested_service_number?: number;
 
   @IsInt()
   service_order_number: number;
 
-  @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => StatusDTO)
-  status: StatusDTO;
+  @IsString()
+  status: string;
 }
