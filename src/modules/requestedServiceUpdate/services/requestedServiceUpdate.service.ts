@@ -77,8 +77,9 @@ export class RequestedServiceService {
             requestedService.requested_service_number,
             RequestedServicesStatus.EM_DIAGNOSTICO,
           );
-        } else {
-          throw new BadRequestException('Employee or Vehicle arrived date is not valid.')
+        }
+        else {
+          throw new BadRequestException('Employee or Vehicle arrived date is not valid.');
         }
       }
     }
@@ -93,9 +94,9 @@ export class RequestedServiceService {
 
       return RequestedServicesStatus.AGUARDANDO_APROVACAO === requestedService.status
         ? await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.AGUARDANDO_APROVACAO,
-        )
+            requestedService.requested_service_number,
+            RequestedServicesStatus.AGUARDANDO_APROVACAO,
+          )
         : null;
     }
   }
@@ -131,9 +132,9 @@ export class RequestedServiceService {
 
       return RequestedServicesStatus.EM_EXECUCAO === requestedService.status
         ? await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.EM_EXECUCAO,
-        )
+            requestedService.requested_service_number,
+            RequestedServicesStatus.EM_EXECUCAO,
+          )
         : null;
     }
   }
@@ -146,9 +147,9 @@ export class RequestedServiceService {
       );
       return RequestedServicesStatus.FINALIZADA === requestedService.status
         ? await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.FINALIZADA,
-        )
+            requestedService.requested_service_number,
+            RequestedServicesStatus.FINALIZADA,
+          )
         : null;
     }
   }
@@ -169,8 +170,7 @@ export class RequestedServiceService {
         return null;
       }
     }
-    
+
     throw new BadRequestException('Service order cannot be delivered.');
   }
-
 }

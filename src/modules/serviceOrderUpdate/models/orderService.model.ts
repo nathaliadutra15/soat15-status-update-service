@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 
 type StatusEntry = { created_at: Date; name: string };
 
@@ -9,10 +9,10 @@ export type RequestedServiceWithStatus = {
 
 export type OrderServiceWithRequestedServices = {
   _id: Types.ObjectId;
-  service_order_number: number;
-  requested_services: number[];
-  status: StatusEntry[];
   createdAt: Date;
-  updatedAt: Date;
+  requested_services: number[];
   requested_services_data: RequestedServiceWithStatus[];
+  service_order_number: number;
+  status: StatusEntry[];
+  updatedAt: Date;
 };

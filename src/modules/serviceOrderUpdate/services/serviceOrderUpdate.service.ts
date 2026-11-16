@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ServiceOrderClient } from '../../httpClient/serviceOrder.client';
-import { ServiceOrderStatus } from '../enums/status.enum';
-import { OrderService, OrderServiceDocument } from '../schemas/serviceOrder.schema';
-import { RequestedService, RequestedServiceDocument } from '../../requestedServiceUpdate/schemas/requestedService.schema';
 import { RequestedServicesStatus } from '../../requestedServiceUpdate/enums/status.enum';
+import { RequestedService, RequestedServiceDocument } from '../../requestedServiceUpdate/schemas/requestedService.schema';
+import { ServiceOrderStatus } from '../enums/status.enum';
 import { OrderServiceWithRequestedServices, RequestedServiceWithStatus } from '../models/orderService.model';
+import { OrderService, OrderServiceDocument } from '../schemas/serviceOrder.schema';
 
 @Injectable()
 export class ServiceOrderUpdateService {
@@ -25,13 +25,14 @@ export class ServiceOrderUpdateService {
       .exec();
   }
 
-  private async findOrderWithRequestedServices(serviceOrderNumber: number,): Promise<OrderServiceWithRequestedServices | null> {
+  private async findOrderWithRequestedServices(serviceOrderNumber: number): Promise<null | OrderServiceWithRequestedServices> {
     const order = await this.OrderServiceModel
       .findOne({ service_order_number: serviceOrderNumber })
       .lean<OrderService & { _id: Types.ObjectId; createdAt: Date; updatedAt: Date }>()
       .exec();
 
-    if (!order) return null;
+    if (!order)
+      return null;
 
     const requestedServices = await this.RequestedServiceModel
       .find({ service_order_number: serviceOrderNumber })
@@ -56,7 +57,7 @@ export class ServiceOrderUpdateService {
 
     if (newStatus === ServiceOrderStatus.ENTREGUE && orderServiceNumber) {
       if (serviceOrderFull && serviceOrderFull.requested_services_data && serviceOrderFull.requested_services_data.length > 0 && serviceOrderFull.requested_services_data.every(
-        (service) => service.status[service.status.length - 1].name === RequestedServicesStatus.FINALIZADA,
+        service => service.status[service.status.length - 1].name === RequestedServicesStatus.FINALIZADA,
       )) {
         await this.updateStatus(orderServiceNumber, newStatus);
         return true;
@@ -66,12 +67,12 @@ export class ServiceOrderUpdateService {
     if (newStatus === ServiceOrderStatus.APROVADO || newStatus === ServiceOrderStatus.CANCELADO) {
       const last_status = serviceOrderFull?.status[serviceOrderFull.status.length - 1].name;
       const checkCancelledRequestedServices = serviceOrderFull?.requested_services_data.every(
-        (service) => service.status[service.status.length - 1].name === RequestedServicesStatus.CANCELADO,
+        service => service.status[service.status.length - 1].name === RequestedServicesStatus.CANCELADO,
       );
 
-      if (last_status === ServiceOrderStatus.PENDENTE &&
-        ((newStatus === ServiceOrderStatus.CANCELADO && checkCancelledRequestedServices) ||
-          (newStatus === ServiceOrderStatus.APROVADO))) {
+      if (last_status === ServiceOrderStatus.PENDENTE
+        && ((newStatus === ServiceOrderStatus.CANCELADO && checkCancelledRequestedServices)
+          || (newStatus === ServiceOrderStatus.APROVADO))) {
         await this.updateStatus(orderServiceNumber, newStatus);
       }
       return false;

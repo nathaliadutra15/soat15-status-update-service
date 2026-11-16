@@ -32,7 +32,7 @@ export class RequestedServiceController {
   }
 
   @Get('/:id')
-  async getRequestedServiceStatusHistory(@Param('id', ParseIntPipe) requestedServiceNumber: number, @Res() res: Response ) {
+  async getRequestedServiceStatusHistory(@Param('id', ParseIntPipe) requestedServiceNumber: number, @Res() _res: Response) {
     return this.requestedServiceUpdate.getRequestedServiceStatusHistory(requestedServiceNumber);
   }
 }
