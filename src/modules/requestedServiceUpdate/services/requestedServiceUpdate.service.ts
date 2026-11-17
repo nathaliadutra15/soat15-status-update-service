@@ -21,6 +21,11 @@ export class RequestedServiceService {
     return requestedService ? requestedService.status[requestedService.status.length - 1].name as RequestedServicesStatus : null;
   }
 
+  private async getRequestedServiceByOrderService(orderServiceNumber: number): Promise<null | RequestedService[]> {
+    const requestedServices = await this.RequestedServiceModel.find({ service_order_number: orderServiceNumber }).exec();
+    return requestedServices;
+  }
+
   private async checkPreviousStatus(requestedServiceNumber: number, expectedStatus: RequestedServicesStatus): Promise<void> {
     const currentStatus = await this.getRequestedServiceStatus(requestedServiceNumber);
     if (currentStatus !== expectedStatus) {
@@ -39,109 +44,133 @@ export class RequestedServiceService {
       .exec();
   }
 
-  async create(requestedService: RequestedServiceDTO) {
-    const newRequestedService = new this.RequestedServiceModel({
-      requested_service_number: requestedService.requested_service_number,
-      service_order_number: requestedService.service_order_number,
-      status: [{ created_at: new Date(), name: requestedService.status.name }],
-    });
+  async getRequestedServiceStatusHistory(requestedServiceNumber: number): Promise<null | RequestedService> {
+    return await this.RequestedServiceModel.findOne({ requested_service_number: requestedServiceNumber }).exec();
+  }
 
-    if (RequestedServicesStatus.RECEBIDA === requestedService.status.name) {
-      const requestedServiceData = await this.orderServiceClient.getRequestedService(requestedService.requested_service_number);
-      const requestedServicesNumbers = requestedServiceData.serviceOrder.requestedServices.map((service: any) => service.id);
+  async create(requestedService: RequestedServiceDTO) {
+    if (RequestedServicesStatus.RECEBIDA === requestedService.status && requestedService.service_order_number) {
+      const serviceOrderData = await this.orderServiceClient.getServiceOrder(requestedService.service_order_number);
+      const requestedServicesNumbers = serviceOrderData.requestedServices.map((service: any) => service.id);
 
       await this.serviceOrderUpdateService.orderResponseUpdate(requestedService.service_order_number, ServiceOrderStatus.PENDENTE, requestedServicesNumbers);
-      return await newRequestedService.save();
+
+      return await this.RequestedServiceModel.insertMany(requestedServicesNumbers.map((serviceNumber: number) => ({
+        requested_service_number: serviceNumber,
+        service_order_number: requestedService.service_order_number,
+        status: [{ created_at: new Date(), name: RequestedServicesStatus.RECEBIDA }],
+      })));
     }
   }
 
   async review(requestedService: RequestedServiceDTO) {
-    await this.checkPreviousStatus(
-      requestedService.requested_service_number,
-      RequestedServicesStatus.RECEBIDA,
-    );
+    if (requestedService.requested_service_number) {
+      await this.checkPreviousStatus(
+        requestedService.requested_service_number,
+        RequestedServicesStatus.RECEBIDA,
+      );
 
-    if (RequestedServicesStatus.EM_DIAGNOSTICO === requestedService.status.name) {
-      const requestedServiceData = await this.orderServiceClient.getRequestedService(requestedService.requested_service_number);
-      if (requestedServiceData.employee && requestedServiceData.serviceOrder.vehicle_arrived_at !== null) {
-        return await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.EM_DIAGNOSTICO,
-        );
+      if (RequestedServicesStatus.EM_DIAGNOSTICO === requestedService.status) {
+        const requestedServiceData = await this.orderServiceClient.getRequestedService(requestedService.requested_service_number);
+        if (requestedServiceData.employee && requestedServiceData.serviceOrder.vehicle_arrived_at !== null) {
+          return await this.updateStatus(
+            requestedService.requested_service_number,
+            RequestedServicesStatus.EM_DIAGNOSTICO,
+          );
+        }
+        else {
+          throw new BadRequestException('Employee or Vehicle arrived date is not valid.');
+        }
       }
     }
   }
 
   async waiting(requestedService: RequestedServiceDTO) {
-    await this.checkPreviousStatus(
-      requestedService.requested_service_number,
-      RequestedServicesStatus.EM_DIAGNOSTICO,
-    );
+    if (requestedService.requested_service_number) {
+      await this.checkPreviousStatus(
+        requestedService.requested_service_number,
+        RequestedServicesStatus.EM_DIAGNOSTICO,
+      );
 
-    return RequestedServicesStatus.AGUARDANDO_APROVACAO === requestedService.status.name
-      ? await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.AGUARDANDO_APROVACAO,
-        )
-      : null;
+      return RequestedServicesStatus.AGUARDANDO_APROVACAO === requestedService.status
+        ? await this.updateStatus(
+            requestedService.requested_service_number,
+            RequestedServicesStatus.AGUARDANDO_APROVACAO,
+          )
+        : null;
+    }
   }
 
   async orderResponse(requestedService: RequestedServiceDTO) {
-    await this.checkPreviousStatus(
-      requestedService.requested_service_number,
-      RequestedServicesStatus.AGUARDANDO_APROVACAO,
-    );
-
-    const newStatus = requestedService.status.name;
-
-    if (
-      newStatus === RequestedServicesStatus.APROVADO
-      || newStatus === RequestedServicesStatus.CANCELADO
-    ) {
-      await this.serviceOrderUpdateService.orderResponseUpdate(
-        requestedService.service_order_number,
-        newStatus === RequestedServicesStatus.APROVADO ? ServiceOrderStatus.APROVADO : ServiceOrderStatus.CANCELADO,
+    if (requestedService.requested_service_number) {
+      await this.checkPreviousStatus(
+        requestedService.requested_service_number,
+        RequestedServicesStatus.AGUARDANDO_APROVACAO,
       );
-      return await this.updateStatus(requestedService.requested_service_number, newStatus);
+
+      const newStatus = requestedService.status;
+
+      if (
+        newStatus === RequestedServicesStatus.APROVADO
+        || newStatus === RequestedServicesStatus.CANCELADO
+      ) {
+        await this.updateStatus(requestedService.requested_service_number, newStatus);
+        await this.serviceOrderUpdateService.orderResponseUpdate(
+          requestedService.service_order_number,
+          newStatus === RequestedServicesStatus.APROVADO ? ServiceOrderStatus.APROVADO : ServiceOrderStatus.CANCELADO,
+        );
+      }
     }
   }
 
   async execution(requestedService: RequestedServiceDTO) {
-    await this.checkPreviousStatus(
-      requestedService.requested_service_number,
-      RequestedServicesStatus.APROVADO,
-    );
+    if (requestedService.requested_service_number) {
+      await this.checkPreviousStatus(
+        requestedService.requested_service_number,
+        RequestedServicesStatus.APROVADO,
+      );
 
-    return RequestedServicesStatus.EM_EXECUCAO === requestedService.status.name
-      ? await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.EM_EXECUCAO,
-        )
-      : null;
+      return RequestedServicesStatus.EM_EXECUCAO === requestedService.status
+        ? await this.updateStatus(
+            requestedService.requested_service_number,
+            RequestedServicesStatus.EM_EXECUCAO,
+          )
+        : null;
+    }
   }
 
   async finish(requestedService: RequestedServiceDTO) {
-    await this.checkPreviousStatus(
-      requestedService.requested_service_number,
-      RequestedServicesStatus.EM_EXECUCAO,
-    );
-    return RequestedServicesStatus.FINALIZADA === requestedService.status.name
-      ? await this.updateStatus(
-          requestedService.requested_service_number,
-          RequestedServicesStatus.FINALIZADA,
-        )
-      : null;
+    if (requestedService.requested_service_number) {
+      await this.checkPreviousStatus(
+        requestedService.requested_service_number,
+        RequestedServicesStatus.EM_EXECUCAO,
+      );
+      return RequestedServicesStatus.FINALIZADA === requestedService.status
+        ? await this.updateStatus(
+            requestedService.requested_service_number,
+            RequestedServicesStatus.FINALIZADA,
+          )
+        : null;
+    }
   }
 
   async deliver(requestedService: RequestedServiceDTO) {
-    await this.checkPreviousStatus(
-      requestedService.requested_service_number,
-      RequestedServicesStatus.FINALIZADA,
-    );
+    if (RequestedServicesStatus.ENTREGUE === requestedService.status && requestedService.service_order_number) {
+      const serviceOrder = await this.serviceOrderUpdateService.orderResponseUpdate(requestedService.service_order_number, ServiceOrderStatus.ENTREGUE);
 
-    if (RequestedServicesStatus.ENTREGUE === requestedService.status.name) {
-      await this.serviceOrderUpdateService.orderResponseUpdate(requestedService.service_order_number, ServiceOrderStatus.ENTREGUE, undefined, requestedService.service_order_number);
-      return await this.updateStatus(requestedService.requested_service_number, RequestedServicesStatus.ENTREGUE);
+      if (serviceOrder) {
+        const requestedServices = await this.getRequestedServiceByOrderService(requestedService.service_order_number) || [];
+
+        for (const requestedServiceData of requestedServices) {
+          await this.updateStatus(
+            requestedServiceData.requested_service_number,
+            RequestedServicesStatus.ENTREGUE,
+          );
+        }
+        return null;
+      }
     }
+
+    throw new BadRequestException('Service order cannot be delivered.');
   }
 }
