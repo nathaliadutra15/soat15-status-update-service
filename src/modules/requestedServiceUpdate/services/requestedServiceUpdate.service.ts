@@ -48,7 +48,7 @@ export class RequestedServiceService {
 
   async getRequestedServiceStatusHistory(requestedServiceNumber: number): Promise<null | RequestedService> {
     const history = await this.RequestedServiceModel.findOne({ requested_service_number: requestedServiceNumber }).exec();
-    return history; 
+    return history;
   }
 
   async create(requestedService: RequestedServiceDTO) {
