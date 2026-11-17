@@ -1,27 +1,28 @@
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { setupDeadLetterTopology, STATUS_QUEUE_OPTIONS } from './config/rabbitmq.config';
 
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  app.connectMicroservice<MicroserviceOptions>(
-    {
-      options: {
-        queue: configService.get('queue.status'),
-        queueOptions: { durable: true },
-        urls: [configService.get('queue.rmq_url')],
-      },
-      transport: Transport.RMQ,
+  const rmqUrl = process.env.RMQ_URL ?? 'amqp://localhost:5672';
+
+  await setupDeadLetterTopology(rmqUrl);
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      noAck: false,
+      prefetchCount: 1,
+      queue: process.env.STATUS_QUEUE_NAME,
+      queueOptions: STATUS_QUEUE_OPTIONS,
+      urls: [rmqUrl],
     },
-    { inheritAppConfig: true },
-  );
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Mecânico - Status')

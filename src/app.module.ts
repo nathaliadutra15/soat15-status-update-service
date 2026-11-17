@@ -14,6 +14,7 @@ import { RequestedService, RequestedServiceSchema } from './modules/requestedSer
 import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
 import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
 import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
+import { ProcessedMessage, ProcessedMessageSchema } from './modules/requestedServiceUpdate/schemas/processedMessage.schema';
 
 @Module({
   controllers: [HealthController, RequestedServiceController, RequestedServiceListener],
@@ -26,6 +27,7 @@ import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services
       }),
     }),
     MongooseModule.forFeature([
+      { name: ProcessedMessage.name, schema: ProcessedMessageSchema },
       { name: RequestedService.name, schema: RequestedServiceSchema },
       { name: OrderService.name, schema: OrderServiceSchema },
     ]),
