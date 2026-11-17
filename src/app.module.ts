@@ -6,6 +6,7 @@ import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { FallbackModule } from './modules/fallback/fallback.module';
 import { HealthController } from './modules/health/health/health.controller';
+import { PaymentClient } from './modules/httpClient/payment.client';
 import { ServiceOrderClient } from './modules/httpClient/serviceOrder.client';
 import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
 import { RequestedService, RequestedServiceSchema } from './modules/requestedServiceUpdate/schemas/requestedService.schema';
@@ -31,6 +32,6 @@ import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services
     FallbackModule,
     HttpModule,
   ],
-  providers: [RequestedServiceService, ServiceOrderUpdateService, ServiceOrderClient],
+  providers: [RequestedServiceService, ServiceOrderUpdateService, ServiceOrderClient, PaymentClient],
 })
 export class AppModule { }
