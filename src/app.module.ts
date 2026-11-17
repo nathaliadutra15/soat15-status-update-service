@@ -10,11 +10,11 @@ import { PaymentClient } from './modules/httpClient/payment.client';
 import { ServiceOrderClient } from './modules/httpClient/serviceOrder.client';
 import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
 import { RequestedServiceListener } from './modules/requestedServiceUpdate/listener/requestedService.listener';
+import { ProcessedMessage, ProcessedMessageSchema } from './modules/requestedServiceUpdate/schemas/processedMessage.schema';
 import { RequestedService, RequestedServiceSchema } from './modules/requestedServiceUpdate/schemas/requestedService.schema';
 import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
 import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
 import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
-import { ProcessedMessage, ProcessedMessageSchema } from './modules/requestedServiceUpdate/schemas/processedMessage.schema';
 
 @Module({
   controllers: [HealthController, RequestedServiceController, RequestedServiceListener],

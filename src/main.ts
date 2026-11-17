@@ -14,7 +14,6 @@ const bootstrap = async () => {
   await setupDeadLetterTopology(rmqUrl);
 
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
     options: {
       noAck: false,
       prefetchCount: 1,
@@ -22,6 +21,7 @@ const bootstrap = async () => {
       queueOptions: STATUS_QUEUE_OPTIONS,
       urls: [rmqUrl],
     },
+    transport: Transport.RMQ,
   });
 
   const config = new DocumentBuilder()
