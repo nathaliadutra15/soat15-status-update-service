@@ -1,9 +1,9 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
 
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule);
@@ -13,12 +13,12 @@ const bootstrap = async () => {
 
   app.connectMicroservice<MicroserviceOptions>(
     {
-      transport: Transport.RMQ,
       options: {
-        urls: [configService.get('queue.rmq_url')],
         queue: configService.get('queue.status'),
         queueOptions: { durable: true },
+        urls: [configService.get('queue.rmq_url')],
       },
+      transport: Transport.RMQ,
     },
     { inheritAppConfig: true },
   );

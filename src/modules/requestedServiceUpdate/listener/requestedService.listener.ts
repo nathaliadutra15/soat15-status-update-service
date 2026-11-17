@@ -26,7 +26,8 @@ export class RequestedServiceListener {
       await this.dispatch(requestedService);
 
       channel.ack(message);
-    } catch (error) {
+    }
+    catch (error) {
       const reason = error instanceof Error ? error.message : JSON.stringify(error);
       this.logger.error(`Failed to process status update ${JSON.stringify(payload)}: ${reason}`);
 
