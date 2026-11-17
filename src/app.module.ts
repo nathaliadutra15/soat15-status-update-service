@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './config/configuration';
 import { AuthModule } from './modules/auth/auth.module';
 import { FallbackModule } from './modules/fallback/fallback.module';
-import { HealthController } from './modules/health/health/health.controller';
+import { HealthController } from './modules/health/controllers/health.controller';
 import { PaymentClient } from './modules/httpClient/payment.client';
 import { ServiceOrderClient } from './modules/httpClient/serviceOrder.client';
 import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
