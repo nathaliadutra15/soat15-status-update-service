@@ -57,6 +57,11 @@ resource "kubernetes_deployment" "status-app" {
             name = "MONGO_URI"
             value = var.mongo_uri
           }
+
+          env {
+            name = "RMQ_URL"
+            value = var.rmq_url
+          }
           
           env {
             name  = "JWT_SECRET"
