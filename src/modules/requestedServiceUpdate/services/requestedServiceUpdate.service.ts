@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PaymentClient } from '../../httpClient/payment.client';
 import { ServiceOrderClient } from '../../httpClient/serviceOrder.client';
 import { ServiceOrderStatus } from '../../serviceOrderUpdate/enums/status.enum';
 import { ServiceOrderUpdateService } from '../../serviceOrderUpdate/services/serviceOrderUpdate.service';
@@ -14,6 +15,7 @@ export class RequestedServiceService {
     @InjectModel(RequestedService.name) private readonly RequestedServiceModel: Model<RequestedServiceDocument>,
     private readonly serviceOrderUpdateService: ServiceOrderUpdateService,
     private readonly orderServiceClient: ServiceOrderClient,
+    private readonly paymentClient: PaymentClient,
   ) { }
 
   private async getRequestedServiceStatus(requestedServiceNumber: number): Promise<null | RequestedServicesStatus> {
@@ -155,6 +157,11 @@ export class RequestedServiceService {
   }
 
   async deliver(requestedService: RequestedServiceDTO) {
+    const paymentStatus = await (await this.paymentClient.getServiceOrderStatus(requestedService.requested_service_number ?? 0)).status;
+    if (paymentStatus !== 'processed') {
+      throw new BadRequestException('Service order cannot be delivered.');
+    };
+
     if (RequestedServicesStatus.ENTREGUE === requestedService.status && requestedService.service_order_number) {
       const serviceOrder = await this.serviceOrderUpdateService.orderResponseUpdate(requestedService.service_order_number, ServiceOrderStatus.ENTREGUE);
 
