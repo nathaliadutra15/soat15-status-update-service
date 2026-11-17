@@ -67,6 +67,7 @@ jobs:
       - name: Terraform Init and Apply
         env:
           TF_VAR_mongo_uri:                   ${{ secrets.MONGO_URI }}
+          TF_VAR_status_queue_name:           ${{ secrets.STATUS_QUEUE_NAME }}
           TF_VAR_image:                       ${{ steps.setup_env.outputs.image }}
           TF_VAR_kind_endpoint:               ${{ secrets.KIND_ENDPOINT }}
           TF_VAR_kind_client_certificate:     ${{ secrets.KIND_CLIENT_CERTIFICATE }}

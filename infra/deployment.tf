@@ -59,6 +59,11 @@ resource "kubernetes_deployment" "status-app" {
           }
 
           env {
+            name = "STATUS_QUEUE_NAME"
+            value = var.status_queue_name
+          }
+
+          env {
             name = "RMQ_URL"
             value = var.rmq_url
           }

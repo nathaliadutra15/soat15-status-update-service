@@ -10,6 +10,10 @@ export default () => ({
   jwt: {
     secret: process.env.JWT_SECRET ?? 'secret',
   },
+  queue: {
+    rmq_url: process.env.RMQ_URL,
+    status: process.env.STATUS_QUEUE_NAME,
+  },
   requestedService: {
     url: process.env.REQUESTED_SERVICE_URL,
   },

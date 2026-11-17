@@ -9,13 +9,14 @@ import { HealthController } from './modules/health/health/health.controller';
 import { PaymentClient } from './modules/httpClient/payment.client';
 import { ServiceOrderClient } from './modules/httpClient/serviceOrder.client';
 import { RequestedServiceController } from './modules/requestedServiceUpdate/controllers/requestedService.controller';
+import { RequestedServiceListener } from './modules/requestedServiceUpdate/listener/requestedService.listener';
 import { RequestedService, RequestedServiceSchema } from './modules/requestedServiceUpdate/schemas/requestedService.schema';
 import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
 import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
 import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
 
 @Module({
-  controllers: [HealthController, RequestedServiceController],
+  controllers: [HealthController, RequestedServiceController, RequestedServiceListener],
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     MongooseModule.forRootAsync({
