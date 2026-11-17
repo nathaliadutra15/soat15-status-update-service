@@ -13,4 +13,4 @@ variable "kind_client_certificate"     {}
 variable "kind_client_key"             {}
 variable "kind_cluster_ca_certificate" {}
 variable "rmq_url"                     {}
-varible  "status_queue_name"           {}
+variable "status_queue_name"           {}
