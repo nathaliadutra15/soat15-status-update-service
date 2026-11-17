@@ -13,4 +13,8 @@ export default () => ({
   requestedService: {
     url: process.env.REQUESTED_SERVICE_URL,
   },
+  queue: {
+    rmq_url: process.env.RMQ_URL,
+    status: process.env.STATUS_QUEUE_NAME,
+  }
 });

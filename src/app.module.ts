@@ -13,9 +13,10 @@ import { RequestedService, RequestedServiceSchema } from './modules/requestedSer
 import { RequestedServiceService } from './modules/requestedServiceUpdate/services/requestedServiceUpdate.service';
 import { OrderService, OrderServiceSchema } from './modules/serviceOrderUpdate/schemas/serviceOrder.schema';
 import { ServiceOrderUpdateService } from './modules/serviceOrderUpdate/services/serviceOrderUpdate.service';
+import { RequestedServiceListener } from './modules/requestedServiceUpdate/listener/requestedService.listener';
 
 @Module({
-  controllers: [HealthController, RequestedServiceController],
+  controllers: [HealthController, RequestedServiceController, RequestedServiceListener],
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     MongooseModule.forRootAsync({
