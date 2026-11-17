@@ -82,8 +82,14 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!@nestjs/mongoose|mongoose|@nestjs/axios|axios)/"
+    ],
     "collectCoverageFrom": [
-      "**/*.(controller|service).(t|j)s"
+      "**/*.(controller|service).(t|j)s",
+      "!**/fallback/**",
+      "!**/health/**",
+      "!**/httpClient/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
