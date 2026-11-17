@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
 import { RequestedServiceDTO } from '../models/requestedService.model';
 import { RequestedServiceService } from '../services/requestedServiceUpdate.service';
+import type { Response } from 'express';
 
 @Controller('status')
 export class RequestedServiceController {
@@ -32,7 +33,8 @@ export class RequestedServiceController {
   }
 
   @Get('/:id')
-  async getRequestedServiceStatusHistory(@Param('id', ParseIntPipe) requestedServiceNumber: number, @Res() _res: Response) {
-    return this.requestedServiceUpdate.getRequestedServiceStatusHistory(requestedServiceNumber);
+  async getRequestedServiceStatusHistory(@Param('id', ParseIntPipe) requestedServiceNumber: number, @Res() res: Response) {
+    const history = await this.requestedServiceUpdate.getRequestedServiceStatusHistory(requestedServiceNumber);
+    return res.status(201).send(history)
   }
 }
