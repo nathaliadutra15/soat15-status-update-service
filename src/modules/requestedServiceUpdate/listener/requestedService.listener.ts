@@ -24,8 +24,6 @@ export class RequestedServiceListener {
       await validateOrReject(requestedService);
 
       await this.dispatch(requestedService);
-
-      channel.ack(message);
     }
     catch (error) {
       const reason = error instanceof Error ? error.message : JSON.stringify(error);
