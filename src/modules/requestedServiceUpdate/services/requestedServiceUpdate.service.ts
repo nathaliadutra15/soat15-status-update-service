@@ -158,8 +158,8 @@ export class RequestedServiceService {
   }
 
   async deliver(requestedService: RequestedServiceDTO) {
-    const paymentStatus = await (await this.paymentClient.getServiceOrderStatus(requestedService.requested_service_number ?? 0)).status;
-    if (paymentStatus !== 'processed') {
+    const paymentStatus = await this.paymentClient.getServiceOrderStatus(requestedService.service_order_number ?? 0);
+    if (paymentStatus.status !== 'processed') {
       throw new BadRequestException('Service order cannot be delivered. Payment was not found.');
     };
 
